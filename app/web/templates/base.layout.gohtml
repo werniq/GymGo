@@ -1,0 +1,79 @@
+{{define "base"}}
+  <!DOCTYPE HTML>
+  <html>
+
+  <head>
+    <style>
+        body {
+            background-color: #011936 !important;
+            align-items: stretch;
+        }
+      {{block "style" .}}
+
+      {{end}}
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>
+        {{block "title" .}}
+
+        {{end}}
+    </title>
+
+  </head>
+
+  <body>
+  <header class="bg-white bg-opacity-5 text-white shadow-lg hidden md:block">
+    <div class="container mx-auto flex items-center h-24">
+      <a href="" class="flex items-center justify-center">
+      </a>
+      <nav class="contents font-semibold text-base lg:text-lg">
+        <ul class="mx-auto flex items-center">
+          <li class="p-5 xl:p-8 active">
+            <a href="">
+              <span>Home page</span>
+            </a>
+          </li>
+          <li class="p-5 xl:p-8">
+            <a id="all-btn"  href="/all-muscles">
+              <span>All Muscles</span>
+            </a>
+          </li>
+          <li class="p-5 xl:p-8">
+            <a id="chest-btn"  href="/chest">
+              <span>Chest</span>
+            </a>
+          </li>
+          <li class="p-5 xl:p-8">
+            <a id="back-btn" href="/back">
+              <span>Back</span>
+            </a>
+          </li>
+          <li class="p-5 xl:p-8">
+            <a id="legs-btn" href="/legs">
+              <span>Legs</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <button class="border border-white rounded-full font-bold px-8 py-2">Contact me</button>
+    </div>
+  </header>
+
+
+  {{block "body" .}}
+    <div class="container">
+        <div class="back"></div>
+        <div class="chest"></div>
+        <div class="legs"></div>
+        <div class="arms"></div>
+    </div>
+  {{end}}
+
+  </body>
+  {{block "js" .}}
+
+  {{end}}
+
+  </html>
+{{end}}

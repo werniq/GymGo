@@ -1,0 +1,88 @@
+{{template "base" .}}
+{{define "style"}}
+
+  <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lato&family=Open+Sans&display=swap');
+
+      body {
+          justify-content: center;
+          background-color: #011936 !important;
+          align-items: center;
+          font-family: 'Lato', sans-serif;
+      }
+
+      .exercise-card {
+          align-content: flex-start;
+          border-radius: 15px;
+          width: 45%;
+          border: 2px solid crimson;
+          margin-top: 10px;
+          background-color: aqua;
+          padding: 10px;
+          font-size: 16px;
+      }
+
+      .cards {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          padding: 25px;
+          background: #013063;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .ex-title {
+          font-size: 24px;
+          color: #000;
+          font-weight: 400;
+          padding: 0 5px;
+          box-shadow: inset 0 0 0 0 white;
+          transition: all 0.4s ease-in-out 0s;
+      }
+
+      .ex-link {
+            text-decoration: none;
+            font-size: 26px;
+            color: slateblue;
+      }
+
+      .ex-title :hover{
+          font-weight: 400;
+          box-shadow: inset 300px 0 0 0 white;
+          color: lightgoldenrodyellow;
+          width: 100%;
+          border: 3px solid crimson;
+      }
+
+      .ex-technique {
+          padding: 15px;
+          font-weight: 400;
+          width: 100%;
+      }
+
+      </style>
+      <script src="https://cdn.tailwindcss.com"></script>
+{{end}}
+{{define "title"}}
+  {{ index .Data "title"}}
+{{end}}
+
+{{define "body"}}
+    <div class="cards">
+    {{ $exerises := index .Data "exercises" }}
+        {{ range $i, $v := $exerises}}
+                <div class="exercise-card">
+                    <h1 class="ex-title">{{$i}}    {{$v.Title}} </h1>
+                    <h1 class="ex-technique">      {{$v.Technique}} </h1>
+                    <a class="ex-link" href="{{$v.VideoURI}}">Youtube Video Link</a>
+                </div>
+             {{ end }}
+        {{ end }}
+    </div>
+
+{{ define "js"}}
+    <script>
+
+    </script>
+{{ end }}
