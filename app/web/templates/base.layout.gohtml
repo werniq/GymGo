@@ -7,7 +7,22 @@
         body {
             background-color: #011936 !important;
             align-items: stretch;
+            font-family: 'Lato', sans-serif;
         }
+
+        .workout {
+            padding: 20px 15px;
+            border-radius: 15px;
+            border: 2px dashed crimson;
+            transition: all 1s ease-in-out;
+        }
+
+        .workout:hover {
+            width: 70px;
+            font-size: 26px;
+            background-color: crimson;
+        }
+
       {{block "style" .}}
 
       {{end}}
@@ -29,6 +44,11 @@
       </a>
       <nav class="contents font-semibold text-base lg:text-lg">
         <ul class="mx-auto flex items-center">
+          <li class="p-5 xl:p-8 active">
+            <a class="workout" href="/generate-workout">
+              <span>GENERATE WORKOUT</span>
+            </a>
+          </li>
           <li class="p-5 xl:p-8 active">
             <a href="">
               <span>Home page</span>
@@ -62,12 +82,7 @@
 
 
   {{block "body" .}}
-    <div class="container">
-        <div class="back"></div>
-        <div class="chest"></div>
-        <div class="legs"></div>
-        <div class="arms"></div>
-    </div>
+
   {{end}}
 
   </body>

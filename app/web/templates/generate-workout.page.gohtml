@@ -1,0 +1,536 @@
+{{template "base" .}}
+
+{{define "style"}}
+  <style>
+      @import url('https://fonts.googleapis.com/css?family=Poppins:900i');
+
+      .body {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          font-family: sans-serif;
+      }
+
+      .wrapper {
+          display: flex;
+          justify-content: center;
+      }
+
+      .cta {
+          display: flex;
+          padding: 10px 45px;
+          text-decoration: none;
+          font-family: 'Poppins', sans-serif;
+          font-size: 40px;
+          color: white;
+          background: #6225E6;
+          transition: 1s;
+          box-shadow: 6px 6px 0 black;
+          transform: skewX(-15deg);
+      }
+
+      .cta:focus {
+          outline: none;
+      }
+
+      .cta:hover {
+          transition: 0.5s;
+          box-shadow: 10px 10px 0 #FBC638;
+      }
+
+      .cta span:nth-child(2) {
+          transition: 0.5s;
+          margin-right: 0px;
+      }
+
+      .cta:hover  span:nth-child(2) {
+          transition: 0.5s;
+          margin-right: 45px;
+      }
+
+      span {
+          transform: skewX(15deg)
+      }
+
+      span:nth-child(2) {
+          width: 20px;
+          margin-left: 30px;
+          position: relative;
+          top: 12%;
+      }
+
+      /**************SVG****************/
+
+      path.one {
+          transition: 0.4s;
+          transform: translateX(-60%);
+      }
+
+      path.two {
+          transition: 0.5s;
+          transform: translateX(-30%);
+      }
+
+      .cta:hover path.three {
+          animation: color_anim 1s infinite 0.2s;
+      }
+
+      .cta:hover path.one {
+          transform: translateX(0%);
+          animation: color_anim 1s infinite 0.6s;
+      }
+
+      .cta:hover path.two {
+          transform: translateX(0%);
+          animation: color_anim 1s infinite 0.4s;
+      }
+
+      /* SVG animations */
+
+      @keyframes color_anim {
+          0% {
+              fill: white;
+          }
+          50% {
+              fill: #FBC638;
+          }
+          100% {
+              fill: white;
+          }
+      }
+
+      .tg-list {
+          text-align: center;
+          display: flex;
+          align-items: center;
+      }
+
+      .tg-list-item {
+          margin: 0 2em;
+      }
+
+      h2 {
+          color: #777;
+      }
+
+      h4 {
+          color: #999;
+      }
+
+      .tgl {
+          display: none;
+      }
+
+      .tgl,
+      .tgl:after,
+      .tgl:before,
+      .tgl *:after,
+      .tgl *:before,
+      .tgl + .tgl-btn {
+          margin-left: 50px;
+          margin-top: 10px;
+          box-sizing: border-box;
+      }
+
+      .tgl::selection {
+          background: none;
+      }
+
+      .tgl + .tgl-btn {
+          outline: 0;
+          display: block;
+          width: 4em;
+          height: 2em;
+          position: relative;
+          cursor: pointer;
+          user-select: none;
+      }
+
+      .tgl + .tgl-btn:after,
+      .tgl + .tgl-btn:before {
+          position: relative;
+          display: block;
+          content: "";
+          width: 50%;
+          height: 100%;
+      }
+
+      .tgl + .tgl-btn:after {
+          left: 0;
+      }
+
+      .tgl + .tgl-btn:before {
+          display: none;
+      }
+
+      .tgl:checked + .tgl-btn:after {
+          left: 50%;
+      }
+
+      .tgl-skewed + .tgl-btn {
+          overflow: hidden;
+          transform: skew(-10deg);
+          backface-visibility: hidden;
+          transition: all .2s ease;
+          font-family: sans-serif;
+          background: #888;
+      }
+
+      .tgl-skewed + .tgl-btn:after,
+      .tgl-skewed + .tgl-btn:before {
+          transform: skew(10deg);
+          display: inline-block;
+          transition: all .2s ease;
+          width: 100%;
+          text-align: center;
+          position: absolute;
+          line-height: 2em;
+          font-weight: bold;
+          color: #fff;
+          text-shadow: 0 1px 0 rgba(0,0,0,.4);
+      }
+
+      .tgl-skewed + .tgl-btn:after {
+          left: 100%;
+          content: attr(data-tg-on);
+      }
+
+      .tgl-skewed + .tgl-btn:before {
+          left: 0;
+          content: attr(data-tg-off);
+      }
+
+      .tgl-skewed + .tgl-btn:active:before {
+          left: -10%;
+      }
+
+      .tgl-skewed:checked + .tgl-btn {
+          background: #86d993;
+      }
+
+      .tgl-skewed:checked + .tgl-btn:before {
+          left: -100%;
+      }
+
+      .tgl-skewed:checked + .tgl-btn:after {
+          left: 0;
+      }
+
+      .tgl-skewed:checked + .tgl-btn:active:after {
+          left: 10%;
+      }
+
+      .gen-titles {
+          margin-left: 35px;
+          font-size: 30px;
+          font-family: 'Lato', sans-serif;
+          color: #86d993;
+      }
+
+      .gen-but {
+          font-size: 18px;
+          border: 2px solid crimson;
+          padding: 20px;
+          color: navajowhite;
+          border-radius: 15px;
+          margin-left: 60px;
+          background-color: crimson;
+          margin-top: 25px;
+          transition: all 1s ease-in-out;
+      }
+
+      .gen-but:hover {
+          color: mintcream;
+          border: 3px mediumspringgreen solid;
+          background-color: mediumorchid;
+      }
+
+      .gen-label1 {
+          font-size: 20px;
+          color: #86d993;
+          margin-left: 60px;
+          margin-top: 10px;
+      }
+
+    </style>
+
+    {{end}}
+
+    {{ define "title" }}
+      {{ index .Data "title"}}
+    {{ end }}
+
+    {{define "body"}}
+
+    <div class="gen-div">
+       <ul>
+        <div class="main">
+          <div>
+            <li>
+              <h2 class="gen-titles">Chest</h2>
+              <input class="tgl tgl-skewed" id="cb3" type="checkbox">
+              <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb3"></label>
+              <label id="num-3" class="hidden gen-label1" for="inp-3">Amount of exercises:</label>
+              <input id="inp-3" type="number" class="hidden gen-num">
+            </li>
+          </div>
+
+          <div>
+            <li>
+              <h2 class="gen-titles">Back</h2>
+              <input class="tgl tgl-skewed" id="cb4" type="checkbox">
+              <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb4"></label>
+              <label id="num-4" class="gen-label1 hidden" for="inp-4">Amount of exercises:</label>
+              <input id="inp-4" type="number" class="hidden gen-num">
+            </li>
+          </div>
+
+          <div>
+            <li>
+              <h1 class="gen-titles">Triceps</h1>
+              <input class="tgl tgl-skewed" id="cb5" type="checkbox">
+              <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb5"></label>
+              <label id="num-5" class="hidden gen-label1" for="inp-5">Amount of exercises:</label>
+              <input id="inp-5" type="number" class="hidden gen-num">
+            </li>
+          </div>
+
+          <div>
+          <li>
+            <h1 class="gen-titles">Biceps</h1>
+            <input class="tgl tgl-skewed" id="cb6" type="checkbox" >
+            <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb6"></label>
+            <label id="num-6" class="hidden gen-label1" for="inp-6">Amount of exercises:</label>
+            <input id="inp-6" type="number" class="gen-num hidden">
+          </li>
+          </div>
+
+          <div>
+            <li>
+              <h1 class="gen-titles">Shoulders</h1>
+              <input class="tgl tgl-skewed" id="cb7" type="checkbox"/>
+              <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb7"></label>
+              <label id="num-7" class="hidden gen-label1" for="inp-7">Amount of exercises:</label>
+              <input id="inp-7" type="number" class="hidden gen-num">
+            </li>
+          </div>
+
+          <div>
+            <li>
+              <h1 class="gen-titles">Glutes</h1>
+              <input class="tgl tgl-skewed" id="cb8" type="checkbox"/>
+              <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb8"></label>
+              <label id="num-8" class="hidden gen-label1" for="inp-8">Amount of exercises:</label>
+              <input id="inp-8" type="number" class="hidden gen-num">
+            </li>
+          </div>
+
+          <div>
+            <li>
+              <h1 class="gen-titles">Legs</h1>
+              <input class="tgl tgl-skewed" id="cb9" type="checkbox"/>
+              <label class="tgl-btn" data-tg-off=":c" data-tg-on="GO" for="cb9"></label>
+              <label id="num-9" class="hidden gen-label1" for="inp-9">Amount of exercises:</label>
+              <input id="inp-9" type="number" class="hidden gen-num">
+            </li>
+          </div>
+          </div>
+    </ul>
+
+       <div class="wrapper">
+         <a class="cta" href="javascript:void(0)" onclick="val()">
+           <span>GO GYM</span>
+           <span>
+           <svg width="66px" height="43px" viewBox="0 0 66 43" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+             <g id="arrow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+               <path class="one" d="M40.1543933,3.89485454 L43.9763149,0.139296592 C44.1708311,-0.0518420739 44.4826329,-0.0518571125 44.6771675,0.139262789 L65.6916134,20.7848311 C66.0855801,21.1718824 66.0911863,21.8050225 65.704135,22.1989893 C65.7000188,22.2031791 65.6958657,22.2073326 65.6916762,22.2114492 L44.677098,42.8607841 C44.4825957,43.0519059 44.1708242,43.0519358 43.9762853,42.8608513 L40.1545186,39.1069479 C39.9575152,38.9134427 39.9546793,38.5968729 40.1481845,38.3998695 C40.1502893,38.3977268 40.1524132,38.395603 40.1545562,38.3934985 L56.9937789,21.8567812 C57.1908028,21.6632968 57.193672,21.3467273 57.0001876,21.1497035 C56.9980647,21.1475418 56.9959223,21.1453995 56.9937605,21.1432767 L40.1545208,4.60825197 C39.9574869,4.41477773 39.9546013,4.09820839 40.1480756,3.90117456 C40.1501626,3.89904911 40.1522686,3.89694235 40.1543933,3.89485454 Z" fill="#FFFFFF"></path>
+               <path class="two" d="M20.1543933,3.89485454 L23.9763149,0.139296592 C24.1708311,-0.0518420739 24.4826329,-0.0518571125 24.6771675,0.139262789 L45.6916134,20.7848311 C46.0855801,21.1718824 46.0911863,21.8050225 45.704135,22.1989893 C45.7000188,22.2031791 45.6958657,22.2073326 45.6916762,22.2114492 L24.677098,42.8607841 C24.4825957,43.0519059 24.1708242,43.0519358 23.9762853,42.8608513 L20.1545186,39.1069479 C19.9575152,38.9134427 19.9546793,38.5968729 20.1481845,38.3998695 C20.1502893,38.3977268 20.1524132,38.395603 20.1545562,38.3934985 L36.9937789,21.8567812 C37.1908028,21.6632968 37.193672,21.3467273 37.0001876,21.1497035 C36.9980647,21.1475418 36.9959223,21.1453995 36.9937605,21.1432767 L20.1545208,4.60825197 C19.9574869,4.41477773 19.9546013,4.09820839 20.1480756,3.90117456 C20.1501626,3.89904911 20.1522686,3.89694235 20.1543933,3.89485454 Z" fill="#FFFFFF"></path>
+               <path class="three" d="M0.154393339,3.89485454 L3.97631488,0.139296592 C4.17083111,-0.0518420739 4.48263286,-0.0518571125 4.67716753,0.139262789 L25.6916134,20.7848311 C26.0855801,21.1718824 26.0911863,21.8050225 25.704135,22.1989893 C25.7000188,22.2031791 25.6958657,22.2073326 25.6916762,22.2114492 L4.67709797,42.8607841 C4.48259567,43.0519059 4.17082418,43.0519358 3.97628526,42.8608513 L0.154518591,39.1069479 C-0.0424848215,38.9134427 -0.0453206733,38.5968729 0.148184538,38.3998695 C0.150289256,38.3977268 0.152413239,38.395603 0.154556228,38.3934985 L16.9937789,21.8567812 C17.1908028,21.6632968 17.193672,21.3467273 17.0001876,21.1497035 C16.9980647,21.1475418 16.9959223,21.1453995 16.9937605,21.1432767 L0.15452076,4.60825197 C-0.0425130651,4.41477773 -0.0453986756,4.09820839 0.148075568,3.90117456 C0.150162624,3.89904911 0.152268631,3.89694235 0.154393339,3.89485454 Z" fill="#FFFFFF"></path>
+             </g>
+           </svg>
+         </span>
+        </a>
+      </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+  <script>
+      let id3 = document.getElementById("cb3")
+      let id4 = document.getElementById("cb4")
+      let id5 = document.getElementById("cb5")
+      let id6 = document.getElementById("cb6")
+      let id7 = document.getElementById("cb7")
+      let id8 = document.getElementById("cb8")
+      let id9 = document.getElementById("cb9")
+
+      id3.addEventListener("click", function() {
+          if (id3.checked) {
+              let input3 = document.getElementById("inp-3")
+              let num3 = document.getElementById("num-3")
+              input3.classList.remove("hidden")
+              num3.classList.remove("hidden")
+          } else {
+              let input3 = document.getElementById("inp-3")
+              let num3 = document.getElementById("num-3")
+              input3.classList.add("hidden")
+              num3.classList.add("hidden")
+          }
+      })
+
+      id4.addEventListener("click", function() {
+          if (id4.checked) {
+              let input4 = document.getElementById("inp-4")
+              let num4 = document.getElementById("num-4")
+              input4.classList.remove("hidden")
+              num4.classList.remove("hidden")
+          } else {
+              let input4 = document.getElementById("inp-4")
+              let num4 = document.getElementById("num-4")
+              input4.classList.add("hidden")
+              num4.classList.add("hidden")
+          }
+      })
+
+      id5.addEventListener("click", function() {
+          if (id5.checked) {
+              let input5 = document.getElementById("inp-5")
+              let num5 = document.getElementById("num-5")
+              input5.classList.remove("hidden")
+              num5.classList.remove("hidden")
+          } else {
+              let input5 = document.getElementById("inp-5")
+              let num5 = document.getElementById("num-5")
+              input5.classList.add("hidden")
+              num5.classList.add("hidden")
+          }
+      })
+
+      id6.addEventListener("click", function() {
+          if (id6.checked) {
+              let input6 = document.getElementById("inp-6")
+              let num6 = document.getElementById("num-6")
+              input6.classList.remove("hidden")
+              num6.classList.remove("hidden")
+          } else {
+              let input6 = document.getElementById("inp-6")
+              let num6 = document.getElementById("num-6")
+              input6.classList.add("hidden")
+              num6.classList.add("hidden")
+          }
+      })
+
+      id7.addEventListener("click", function() {
+          if (id7.checked) {
+              let input7 = document.getElementById("inp-7")
+              let num7 = document.getElementById("num-7")
+              input7.classList.remove("hidden")
+              num7.classList.remove("hidden")
+          } else {
+              let input7 = document.getElementById("inp-7")
+              let num7 = document.getElementById("num-7")
+              input7.classList.add("hidden")
+              num7.classList.add("hidden")
+          }
+      })
+
+      id8.addEventListener("click", function() {
+          if (id8.checked) {
+              let input8 = document.getElementById("inp-8")
+              let num8 = document.getElementById("num-8")
+              input8.classList.remove("hidden")
+              num8.classList.remove("hidden")
+          } else {
+              let input8 = document.getElementById("inp-8")
+              let num8 = document.getElementById("num-8")
+              input8.classList.add("hidden")
+              num8.classList.add("hidden")
+          }
+      })
+
+      id9.addEventListener("click", function() {
+          if (id9.checked) {
+              let input9 = document.getElementById("inp-9")
+              let num9 = document.getElementById("num-9")
+              input9.classList.remove("hidden")
+              num9.classList.remove("hidden")
+          } else {
+              let input9 = document.getElementById("inp-9")
+              let num9 = document.getElementById("num-9")
+              input9.classList.add("hidden")
+              num9.classList.add("hidden")
+          }
+      })
+
+
+      function val() {
+          let counter = 0;
+          let exercisesCount = []
+          let muscles = [];
+          const requestOptions = {
+              method: 'post',
+              headers: {
+                  "Content-Type": "Application/json",
+                  "Accept": "Application/json",
+              }
+          };
+          if (id3.checked) {
+              console.log("ID3 checked")
+              muscles += "chest "
+              exercisesCount[counter] = document.getElementById("inp-3")
+              counter++
+          }
+          if (id4.checked) {
+              console.log("ID4 checked")
+              muscles += "back "
+              exercisesCount[counter] = document.getElementById("inp-4")
+              counter++
+          }
+          if (id5.checked) {
+              console.log("ID5 checked")
+              muscles += "triceps "
+              exercisesCount[counter] = document.getElementById("inp-5")
+              counter++
+          }
+          if (id6.checked) {
+              console.log("ID6 checked")
+              muscles += "biceps "
+              exercisesCount[counter] = document.getElementById("inp-6")
+              counter++
+          }
+          if (id7.checked) {
+              console.log("ID7 checked")
+              muscles += "shoulders  "
+              exercisesCount[counter] = document.getElementById("inp-7")
+              counter++
+          }
+          if (id8.checked) {
+              console.log("ID8 checked")
+              muscles += "glutes "
+              exercisesCount[counter] = document.getElementById("inp-8")
+              counter++
+          }
+          if (id9.checked) {
+              console.log("ID9 checked")
+              muscles += "legs "
+              exercisesCount[counter] = document.getElementById("inp-9")
+              counter++
+          }
+          console.log(muscles)
+
+          fetch("localhost:4001/api/api/generate-workout", requestOptions)
+              .then(response => response.json())
+              .then(data => {
+                  if (!data.error) {
+                      let resp = JSON.parse(data);
+                      console.log(data)
+                  }
+              })
+              .catch(e => {
+                  console.error("Error occured: ", e)
+              })
+
+      }
+  </script>
+{{ end }}

@@ -124,6 +124,9 @@ func main() {
 	router.GET("/chets", web.Chest)
 	router.GET("/back", web.Back)
 	router.GET("/biceps", web.Biceps)
+	router.GET("/generate-workout", web.GenerateWorkoutPage)
 
-	router.Run(":8000")
+	if err := router.Run(":8000"); err != nil {
+		web.errorLog.Printf("Error running server: %v", err)
+	}
 }

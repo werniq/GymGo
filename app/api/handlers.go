@@ -7,6 +7,7 @@ import (
 	"github.com/werniq/gym/models"
 	"math/rand"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -124,35 +125,40 @@ func (web *webapp) ReturnExercises(c *gin.Context) {
 // for given muscle and amount of exercises, also given by user
 func (web *webapp) GenerateWorkout(c *gin.Context) {
 	var payload struct {
-		ExercisesCount int      `json:"exercises_count"`
-		Muscles        []string `json:"muscles"`
+		ExercisesCount []int  `json:"exercises_count"`
+		Muscles        string `json:"muscles"`
 	}
 
 	var response struct {
 		Muscles   []string          `json:"muscles"`
 		Exercises []models.Exercise `json:"exercises"`
 	}
-	response.Muscles = payload.Muscles
 
-	json.NewDecoder(c.Request.Body).Decode(&payload)
-
-	if payload.ExercisesCount <= 0 {
-		var info struct {
-			Error   bool   `json:"error"`
-			Message string `json:"message"`
-		}
-		info.Error = true
-		info.Message = "Workout should contain contain more than 5-6 exercises"
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   info.Error,
-			"message": info.Message,
+	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+	if err != nil {
+		web.errorLog.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error decoding request body: %v", err),
 		})
 		return
+	}:
+
+	muscles := strings.Split(payload.Muscles, "")
+	response.Muscles = muscles
+
+	for i := 0; i <= len(payload.ExercisesCount)-1; i++ {
+		if payload.ExercisesCount[i] <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error":   true,
+				"message": "exercises count can not be less or equal 0",
+			})
+		}
 	}
 
 	// generating exercises for workout (get random once from table)
-	for i := 0; i < payload.ExercisesCount; i++ {
-		ex, err := web.db.GetOneRandomExercise(payload.Muscles[i])
+	for i := 0; i < len(payload.ExercisesCount); i++ {
+		ex, err := web.db.GetOneRandomExercise(response.Muscles[i])
 		if err != nil {
 			var info struct {
 				Error   bool   `json:"error"`

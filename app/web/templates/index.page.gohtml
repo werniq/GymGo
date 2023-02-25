@@ -1,13 +1,120 @@
 {{template "base" .}}
-      {{define "style"}}
+{{define "style"}}
+        <style>
+            .body {
+                align-items: stretch;
+            }
+            .muscle {
+                width: 90%;
+                padding: 15px;
+                margin-left: 250px;
+                margin-top: 50px;
+                height: 500px;
+                border: 3px solid #000000;;
+                transition: all 1s ease-in-out;
+            }
+
+            .back {
+                transition: all 1s ease-in-out;
+                background-image: url("https://www.teahub.io/photos/full/196-1961309_bodybuilding-hd-wallpaper-bodybuilding-photos-cool-bodybuilder-back.jpg");
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+            }
+            .back:hover {
+                margin-left: 0;
+                width: 119%;
+                height: 650px;
+                font-size: 35px;
+            }
+
+            .chest {
+                background-image: url("https://th.bing.com/th/id/R.8bd9acfd356564df368c61b2dd5e7740?rik=En13%2fypI4sEstA&pid=ImgRaw&r=0");
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+                transition: all 1s ease-in-out;
+            }
+
+            .chest:hover {
+                margin-left: 0;
+                height: 650px;
+                width: 119%;
+                font-size: 35px;
+            }
+
+            .legs {
+                transition: all 1s ease-in-out;
+                background-size: 100% 100%;
+                background-image: url("https://www.shutterstock.com/shutterstock/photos/1861917607/display_1500/stock-photo-muscular-man-using-weights-machine-for-legs-at-the-gym-hard-training-1861917607.jpg");
+                background-repeat: no-repeat;
+            }
+
+            .legs:hover {
+                height: 650px;
+                margin-left: 0;
+                width: 119%;
+                font-size: 35px;
+            }
+
+            .biceps {
+                transition: all 1s ease-in-out;
+                background-image: url("https://th.bing.com/th/id/R.4707484d0ce58a26497e42b93f2ddfbf?rik=h%2f%2bkkmeKGC3YmQ&riu=http%3a%2f%2fgetwallpapers.com%2fwallpaper%2ffull%2fd%2f3%2fb%2f419476.jpg&ehk=bA9jg2TPE0xXTgWqRli2yjzqJVPrmojFytWBEWZ73Ig%3d&risl=&pid=ImgRaw&r=0");
+                background-size: 100% 100%;
+                background-repeat: no-repeat;
+            }
+
+            .biceps:hover {
+                margin-left: 0;
+                width: 119%;
+                height: 650px;
+                font-size: 35px;
+            }
+
+            .muscle:hover {
+                padding: 50px;
+                border: 3px solid crimson;
+            }
+
+            .cont-title {
+                float: start;
+                color: #fff;
+                font-size: 36px;
+            }
+        </style>
 
       {{end}}
         {{define "title"}}
-          Home page
+            {{ index .Data "title"}}
         {{end}}
 
       {{define "body"}}
+        <div>
+          <div class="container">
+            <a href="/back">
+              <div class="muscle back">
+                <h1 class="cont-title">Back Exercises</h1>
+              </div>
+            </a>
 
+            <a href="/chest">
+              <div class="muscle chest">
+                <h1 class="cont-title">Chest Exercises</h1>
+              </div>
+            </a>
+
+            <a href="/legs">
+              <div class="muscle legs">
+                <h1 class="cont-title">Legs Exercises</h1>
+              </div>
+            </a>
+
+            <a href="/biceps">
+              <div class="muscle biceps">
+                <h1 class="cont-title">Biceps Exercises</h1>
+              </div>
+            </a>
+          </div>
+
+        </div>
       {{end}}
 
   {{define "js"}}

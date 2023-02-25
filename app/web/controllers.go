@@ -24,6 +24,12 @@ func (web *webapp) HomePage(c *gin.Context) {
 	}
 }
 
+func (web *webapp) GenerateWorkoutPage(c *gin.Context) {
+	if err := web.renderTemplate(c.Writer, c.Request, "generate-workout", &templateData{}); err != nil {
+		fmt.Printf("Error rendering GENERATE-WORKOUT page: %v", err)
+	}
+}
+
 // Legs created request to server, and renders page with exercises data, received from server
 func (web *webapp) Legs(c *gin.Context) {
 	req, err := http.NewRequest("POST", "http://localhost:4001/api/legs/legs", nil)
