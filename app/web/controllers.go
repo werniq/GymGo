@@ -25,7 +25,7 @@ func (web *webapp) HomePage(c *gin.Context) {
 }
 
 func (web *webapp) GenerateWorkoutPage(c *gin.Context) {
-	if err := web.renderTemplate(c.Writer, c.Request, "generate-workout", &templateData{}); err != nil {
+	if err := web.renderTemplate(c.Writer, c.Request, "generate-workout", &templateData{}, "workout"); err != nil {
 		fmt.Printf("Error rendering GENERATE-WORKOUT page: %v", err)
 	}
 }

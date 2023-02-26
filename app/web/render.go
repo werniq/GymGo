@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 )
 
 type templateData struct {
@@ -28,17 +29,17 @@ func (web *webapp) addDefaultData(td *templateData, r *http.Request) *templateDa
 	return td
 }
 
-func (web *webapp) renderTemplate(w http.ResponseWriter, r *http.Request, page string, td *templateData) error {
+func (web *webapp) renderTemplate(w http.ResponseWriter, r *http.Request, page string, td *templateData, partials ...string) error {
 	var t *template.Template
 	var err error
 	templateToRender := fmt.Sprintf("templates/%s.page.gohtml", page)
 
 	_, templateInMap := web.templateCache[templateToRender]
 
-	if web.env == "production" && templateInMap {
+	if templateInMap {
 		t = web.templateCache[templateToRender]
 	} else {
-		t, err = web.parseTemplate(page, templateToRender)
+		t, err = web.parseTemplate(page, templateToRender, partials)
 		if err != nil {
 			fmt.Printf("Error parsing template: %v", err)
 			return err
@@ -59,14 +60,23 @@ func (web *webapp) renderTemplate(w http.ResponseWriter, r *http.Request, page s
 	return nil
 }
 
-func (web *webapp) parseTemplate(page, templateToRender string) (*template.Template, error) {
+func (web *webapp) parseTemplate(page, templateToRender string, partials []string) (*template.Template, error) {
 	var t *template.Template
 	var err error
 
-	t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).ParseFS(templateFS, "templates/base.layout.gohtml", templateToRender)
+	if len(partials) > 0 {
+		for i, x := range partials {
+			partials[i] = fmt.Sprintf("templates/javascript/%s.partial.gohtml", x)
+		}
+	}
 
+	if len(partials) > 0 {
+		t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).ParseFS(templateFS, "templates/base.layout.gohtml", strings.Join(partials, ","), templateToRender)
+	} else {
+		t, err = template.New(fmt.Sprintf("%s.page.gohtml", page)).ParseFS(templateFS, "templates/base.layout.gohtml", templateToRender)
+	}
 	if err != nil {
-		fmt.Printf("Error creating template: %v", err)
+		web.errorLog.Println(err)
 		return nil, err
 	}
 

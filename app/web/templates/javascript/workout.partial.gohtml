@@ -1,0 +1,188 @@
+<script>
+    import axios from "axios";
+
+    let id3 = document.getElementById("cb3")
+    let id4 = document.getElementById("cb4")
+    let id5 = document.getElementById("cb5")
+    let id6 = document.getElementById("cb6")
+    let id7 = document.getElementById("cb7")
+    let id8 = document.getElementById("cb8")
+    let id9 = document.getElementById("cb9")
+
+    id3.addEventListener("click", function() {
+        if (id3.checked) {
+            let input3 = document.getElementById("inp-3")
+            let num3 = document.getElementById("num-3")
+            input3.classList.remove("hidden")
+            num3.classList.remove("hidden")
+        } else {
+            let input3 = document.getElementById("inp-3")
+            let num3 = document.getElementById("num-3")
+            input3.classList.add("hidden")
+            num3.classList.add("hidden")
+        }
+    })
+
+    id4.addEventListener("click", function() {
+        if (id4.checked) {
+            let input4 = document.getElementById("inp-4")
+            let num4 = document.getElementById("num-4")
+            input4.classList.remove("hidden")
+            num4.classList.remove("hidden")
+        } else {
+            let input4 = document.getElementById("inp-4")
+            let num4 = document.getElementById("num-4")
+            input4.classList.add("hidden")
+            num4.classList.add("hidden")
+        }
+    })
+
+    id5.addEventListener("click", function() {
+        if (id5.checked) {
+            let input5 = document.getElementById("inp-5")
+            let num5 = document.getElementById("num-5")
+            input5.classList.remove("hidden")
+            num5.classList.remove("hidden")
+        } else {
+            let input5 = document.getElementById("inp-5")
+            let num5 = document.getElementById("num-5")
+            input5.classList.add("hidden")
+            num5.classList.add("hidden")
+        }
+    })
+
+    id6.addEventListener("click", function() {
+        if (id6.checked) {
+            let input6 = document.getElementById("inp-6")
+            let num6 = document.getElementById("num-6")
+            input6.classList.remove("hidden")
+            num6.classList.remove("hidden")
+        } else {
+            let input6 = document.getElementById("inp-6")
+            let num6 = document.getElementById("num-6")
+            input6.classList.add("hidden")
+            num6.classList.add("hidden")
+        }
+    })
+
+    id7.addEventListener("click", function() {
+        if (id7.checked) {
+            let input7 = document.getElementById("inp-7")
+            let num7 = document.getElementById("num-7")
+            input7.classList.remove("hidden")
+            num7.classList.remove("hidden")
+        } else {
+            let input7 = document.getElementById("inp-7")
+            let num7 = document.getElementById("num-7")
+            input7.classList.add("hidden")
+            num7.classList.add("hidden")
+        }
+    })
+
+    id8.addEventListener("click", function() {
+        if (id8.checked) {
+            let input8 = document.getElementById("inp-8")
+            let num8 = document.getElementById("num-8")
+            input8.classList.remove("hidden")
+            num8.classList.remove("hidden")
+        } else {
+            let input8 = document.getElementById("inp-8")
+            let num8 = document.getElementById("num-8")
+            input8.classList.add("hidden")
+            num8.classList.add("hidden")
+        }
+    })
+
+    id9.addEventListener("click", function() {
+        if (id9.checked) {
+            let input9 = document.getElementById("inp-9")
+            let num9 = document.getElementById("num-9")
+            input9.classList.remove("hidden")
+            num9.classList.remove("hidden")
+        } else {
+            let input9 = document.getElementById("inp-9")
+            let num9 = document.getElementById("num-9")
+            input9.classList.add("hidden")
+            num9.classList.add("hidden")
+        }
+    })
+
+
+    function val() {
+        let counter = 0;
+        let exercisesCount = []
+        let muscles = [];
+
+        if (id3.checked) {
+            console.log("ID3 checked")
+            muscles += "chest "
+            exercisesCount[counter] = document.getElementById("inp-3")
+            counter++
+        }
+        if (id4.checked) {
+            console.log("ID4 checked")
+            muscles += "back "
+            exercisesCount[counter] = document.getElementById("inp-4")
+            counter++
+        }
+        if (id5.checked) {
+            console.log("ID5 checked")
+            muscles += "triceps "
+            exercisesCount[counter] = document.getElementById("inp-5")
+            counter++
+        }
+        if (id6.checked) {
+            console.log("ID6 checked")
+            muscles += "biceps "
+            exercisesCount[counter] = document.getElementById("inp-6")
+            counter++
+        }
+        if (id7.checked) {
+            console.log("ID7 checked")
+            muscles += "shoulders  "
+            exercisesCount[counter] = document.getElementById("inp-7")
+            counter++
+        }
+        if (id8.checked) {
+            console.log("ID8 checked")
+            muscles += "glutes "
+            exercisesCount[counter] = document.getElementById("inp-8")
+            counter++
+        }
+        if (id9.checked) {
+            console.log("ID9 checked")
+            muscles += "legs "
+            exercisesCount[counter] = document.getElementById("inp-9")
+            counter++
+        }
+
+        let requestBody = {
+            "exercises_count": exercisesCount,
+            "muscles": muscles
+        }
+
+        const requestOptions = {
+            method: 'post',
+            headers: {
+                "Content-Type": "Application/json",
+                "Accept": "Application/json",
+            },
+            body: JSON.stringify(requestBody)
+        };
+
+        console.log(muscles)
+
+        axios.post("localhost:4001/api/generate-workout", null, requestOptions)
+            .then(res => res.json)
+            .then(data => {
+                if (data.Muscles !== null || data.Exercises !== null) {
+                    console.log(data)
+                    localStorage.setItem("exercises", data.Exercises)
+                    localStorage.setItem("muscles", data.Muscle)
+                } else {
+                    alert("something went wrong with the server. take our apologize.")
+                }
+            })
+
+    }
+</script>

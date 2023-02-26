@@ -75,7 +75,10 @@ func (web *webapp) ReturnExercises(c *gin.Context) {
 
 	var exercises []models.Exercise
 	var exercisesID []int
-	json.NewDecoder(c.Request.Body).Decode(&info.ExerciseCount)
+	err := json.NewDecoder(c.Request.Body).Decode(&info.ExerciseCount)
+	if err != nil {
+		web.errorLog.Println(err)
+	}
 	if info.ExerciseCount <= 0 {
 		var payload struct {
 			Error   bool   `json:"error"`
@@ -142,7 +145,7 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 			"message": fmt.Sprintf("Error decoding request body: %v", err),
 		})
 		return
-	}:
+	}
 
 	muscles := strings.Split(payload.Muscles, "")
 	response.Muscles = muscles
@@ -177,8 +180,8 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 
 	//out, _ := json.MarshalIndent(payload, "", "\t")
 	c.JSON(http.StatusOK, gin.H{
-		"exercises": response.Exercises,
-		"muscles":   response.Muscles,
+		"Exercises": response.Exercises,
+		"Muscles":   response.Muscles,
 	})
 }
 
