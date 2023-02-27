@@ -24,7 +24,7 @@ var (
 	}
 )
 
-// ReturnOneExercise gets one exercise from table given in r.Body, and
+// ReturnOneExercise gets one exercise from table given in c.Request.Body, and
 // writes exercise in json format in response. Will be used for re-generating
 // exercise. Need to create a button, in lower part of exercise card, and if clicked
 // re-generating exercise.
@@ -33,10 +33,13 @@ func (web *webapp) ReturnOneExercise(c *gin.Context) {
 		Table string `json:"table"`
 		Id    int    `json:"current_exercise_id"`
 	}
-	json.NewDecoder(c.Request.Body).Decode(&req)
+	var err error
+	err = json.NewDecoder(c.Request.Body).Decode(&req)
+	if err != nil {
+		return
+	}
 	var num1 int
 	var exercise models.Exercise
-	var err error
 	var payload struct {
 		Error   bool   `json:"error"`
 		Message string `json:"message"`
@@ -110,7 +113,7 @@ func (web *webapp) ReturnExercises(c *gin.Context) {
 			}
 			payload.Error = true
 			payload.Message = "Actually, idgaf what the error is"
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error":   payload.Error,
 				"message": payload.Message,
 			})
@@ -128,7 +131,7 @@ func (web *webapp) ReturnExercises(c *gin.Context) {
 // for given muscle and amount of exercises, also given by user
 func (web *webapp) GenerateWorkout(c *gin.Context) {
 	var payload struct {
-		ExercisesCount []int  `json:"exercises_count"`
+		ExercisesCount []int  `json:"exercisesCount"`
 		Muscles        string `json:"muscles"`
 	}
 
@@ -136,18 +139,18 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 		Muscles   []string          `json:"muscles"`
 		Exercises []models.Exercise `json:"exercises"`
 	}
-
 	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+
 	if err != nil {
 		web.errorLog.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   true,
-			"message": fmt.Sprintf("Error decoding request body: %v", err),
+			"message": fmt.Sprintf("Error decoding request body: %v", err.Error()),
 		})
 		return
 	}
 
-	muscles := strings.Split(payload.Muscles, "")
+	muscles := strings.Split(payload.Muscles, " ")
 	response.Muscles = muscles
 
 	for i := 0; i <= len(payload.ExercisesCount)-1; i++ {
@@ -156,53 +159,30 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 				"error":   true,
 				"message": "exercises count can not be less or equal 0",
 			})
+			return
 		}
 	}
 
 	// generating exercises for workout (get random once from table)
 	for i := 0; i < len(payload.ExercisesCount); i++ {
-		ex, err := web.db.GetOneRandomExercise(response.Muscles[i])
-		if err != nil {
-			var info struct {
-				Error   bool   `json:"error"`
-				Message string `json:"message"`
+		if muscles[i] != "" {
+			exer, err := web.db.GenerateXRandomExercises(muscles[i], payload.ExercisesCount[i])
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error":   true,
+					"message": "error generating exercises. try again later",
+				})
+				return
 			}
-			info.Error = true
-			info.Message = "something went wrong. please, try again"
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   info.Error,
-				"message": info.Message,
-			})
-			return
+			for i := 0; i <= len(exer)-1; i++ {
+				response.Exercises = append(response.Exercises, exer[i])
+			}
 		}
-		response.Exercises = append(response.Exercises, ex)
 	}
-
 	//out, _ := json.MarshalIndent(payload, "", "\t")
 	c.JSON(http.StatusOK, gin.H{
-		"Exercises": response.Exercises,
-		"Muscles":   response.Muscles,
+		"exercises": response.Exercises,
 	})
-}
-
-// ReturnAllBackExercises is used in /api/back route, for receiving all exercises for back
-func (web *webapp) ReturnAllBackExercises(c *gin.Context) {
-	stmt := `SELECT * FROM back`
-	var back []models.Exercise
-
-	row, err := web.db.DB.Query(stmt)
-
-	if err != nil {
-		fmt.Printf("Error selecting EXERCISES from BACK table: %v", err)
-		return
-	}
-
-	err = row.Scan(&back)
-
-	c.JSON(http.StatusOK, gin.H{
-		"exercises": back,
-	})
-
 }
 
 // ReturnAllLegsExercises is used in /api/legs route, for receiving all exercises for legs
@@ -221,12 +201,14 @@ func (web *webapp) ReturnAllLegsExercises(c *gin.Context) {
 	for row.Next() {
 		var title string
 		var technique string
+		var id int
 		var videoURI string
 		var ex models.Exercise
-		if err := row.Scan(&title, &technique, &videoURI); err != nil {
+		if err := row.Scan(&title, &technique, &videoURI, &id); err != nil {
 			web.errorLog.Println(err)
 		}
 		ex = models.Exercise{
+			ID:        id,
 			Title:     title,
 			Technique: technique,
 			VideoURI:  videoURI,
@@ -259,10 +241,124 @@ func (web *webapp) ReturnAllChestExercises(c *gin.Context) {
 		return
 	}
 
-	err = row.Scan(&chest)
+	for row.Next() {
+		var title string
+		var technique string
+		var videoURI string
+		var id int
+		var ex models.Exercise
+		if err := row.Scan(&title, &technique, &videoURI, &id); err != nil {
+			web.errorLog.Println(err)
+		}
+		ex = models.Exercise{
+			ID:        id,
+			Title:     title,
+			Technique: technique,
+			VideoURI:  videoURI,
+		}
+		chest = append(chest, ex)
+	}
+
+	out, err := json.MarshalIndent(chest, "", "\t")
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	json.Unmarshal(out, &chest)
 
 	c.JSON(http.StatusOK, gin.H{
 		"exercises": chest,
+	})
+}
+
+// ReturnAllGlutesExercises is used in /api/chest route, for receiving all exercises for chest
+func (web *webapp) ReturnAllGlutesExercises(c *gin.Context) {
+	stmt := `SELECT * FROM glutes`
+	var glutes []models.Exercise
+
+	row, err := web.db.DB.Query(stmt)
+
+	if err != nil {
+		fmt.Printf("Error selecting EXERCISES from GLUTES table: %v", err)
+		return
+	}
+
+	for row.Next() {
+		var title string
+		var technique string
+		var videoURI string
+		var id int
+		var ex models.Exercise
+		if err := row.Scan(&title, &technique, &videoURI, &id); err != nil {
+			web.errorLog.Println(err)
+		}
+		ex = models.Exercise{
+			ID:        id,
+			Title:     title,
+			Technique: technique,
+			VideoURI:  videoURI,
+		}
+		glutes = append(glutes, ex)
+	}
+
+	out, err := json.MarshalIndent(glutes, "", "\t")
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	err = json.Unmarshal(out, &glutes)
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"exercises": glutes,
+	})
+}
+
+// ReturnAllBackExercises is used in /api/biceps route, for receiving all exercises for biceps
+func (web *webapp) ReturnAllBackExercises(c *gin.Context) {
+	stmt := `SELECT * FROM back`
+	var back []models.Exercise
+
+	row, err := web.db.DB.Query(stmt)
+
+	if err != nil {
+		fmt.Printf("Error selecting EXERCISES from BACK table: %v", err)
+		return
+	}
+
+	for row.Next() {
+		var id int
+		var title string
+		var technique string
+		var videoURI string
+		var ex models.Exercise
+		if err := row.Scan(&title, &technique, &videoURI, &id); err != nil {
+			web.errorLog.Println(err)
+		}
+		ex = models.Exercise{
+			ID:        id,
+			Title:     title,
+			Technique: technique,
+			VideoURI:  videoURI,
+		}
+		back = append(back, ex)
+	}
+
+	out, err := json.MarshalIndent(back, "", "\t")
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	json.Unmarshal(out, &back)
+
+	c.JSON(http.StatusOK, gin.H{
+		"exercises": back,
 	})
 }
 
@@ -278,7 +374,39 @@ func (web *webapp) ReturnAllBicepsExercises(c *gin.Context) {
 		return
 	}
 
-	err = row.Scan(&biceps)
+	for row.Next() {
+		var id int
+		var title string
+		var technique string
+		var videoURI string
+		var ex models.Exercise
+		if err := row.Scan(&title, &technique, &videoURI, &id); err != nil {
+			web.errorLog.Println(err)
+		}
+		ex = models.Exercise{
+			ID:        id,
+			Title:     title,
+			Technique: technique,
+			VideoURI:  videoURI,
+		}
+		biceps = append(biceps, ex)
+	}
+
+	out, err := json.MarshalIndent(biceps, "", "\t")
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	err = json.Unmarshal(out, &biceps)
+	if err != nil {
+		web.errorLog.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error unmarshalling JSON: %v", err),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"exercises": biceps,
@@ -297,7 +425,31 @@ func (web *webapp) ReturnAllTricepsExercises(c *gin.Context) {
 		return
 	}
 
-	err = row.Scan(&triceps)
+	for row.Next() {
+		var id int
+		var title string
+		var technique string
+		var videoURI string
+		var ex models.Exercise
+		if err := row.Scan(&title, &technique, &videoURI, &id); err != nil {
+			web.errorLog.Println(err)
+		}
+		ex = models.Exercise{
+			ID:        id,
+			Title:     title,
+			Technique: technique,
+			VideoURI:  videoURI,
+		}
+		triceps = append(triceps, ex)
+	}
+
+	out, err := json.MarshalIndent(triceps, "", "\t")
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	json.Unmarshal(out, &triceps)
 
 	c.JSON(http.StatusOK, gin.H{
 		"exercises": triceps,

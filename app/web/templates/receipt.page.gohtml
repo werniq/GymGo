@@ -1,0 +1,67 @@
+{{template "base" .}}
+
+{{define "style"}}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Open+Sans&family=Tilt+Warp&display=swap');
+
+        .cards {
+            box-sizing: border-box;
+            font-family: 'Tilt Warp', cursive;
+        }
+
+        .receipt {
+
+        }
+
+        .exercise {
+            width: 50%;
+        }
+
+        .exercise:hover {
+            width: 65%;
+        }
+
+        .exercise-title {
+            font-size: 26px;
+        }
+
+        .exercise-tech {
+            font-size: 17px;
+        }
+
+        .exercise-video {
+            font-size: 22px;
+        }
+    </style>
+{{end}}
+
+{{define "title"}}
+    Your workout | Your workout
+{{end}}
+
+{{define "body"}}
+    <div class="cards">
+      <div class="receipt">
+          {{ $exercises := index .Data "exercises" }}
+          {{range $i, $v := $exercises }}
+            <div class="exercise" id="{{$i}}">
+              <h1 class="exercise-title">{{$v.Title}}</h1>
+              <p class="exercise-tech">{{$v.Technique}}</p>
+              <h2 class="exercise-video">{{$v.VideoURI}}</h2>
+              <a href="javascript:void(0)" onclick="changeExercise()">Regenerate</a>
+            </div>
+          {{end}}
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    <script>
+        function changeExercise() {
+
+        }
+      function val() {
+
+      }
+    </script>
+{{end}}

@@ -5,6 +5,8 @@
   <head>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css?family=Titillium+Web:400,600');
+
         body {
             background-color: #011936 !important;
             align-items: stretch;
@@ -19,10 +21,68 @@
         }
 
         .workout:hover {
-            width: 70px;
+            width: 90px;
             font-size: 26px;
             background-color: crimson;
         }
+
+        .nav {
+            font-family: 'Titillium Web';
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: 600;
+            transition: all .35s ease;
+        }
+
+        .nav .link {
+            width: 150px;
+            padding: .5em .8em;
+            color: rgba(255,255,255,.5);
+            position: relative;
+            text-decoration: none;
+            font-size: 20px;
+        }
+
+
+        .nav .link::before,
+        .nav .link::after {
+            content: '';
+            height: 18px;
+            width: 25px;
+            position: absolute;
+            transition: all .35s ease;
+            opacity: 0;
+        }
+
+        .nav .link::before {
+            content: '';
+            right: 0;
+            top: 0;
+            border-top: 3px solid #791e94;
+            border-right: 3px solid #791e94;
+            transform: translate(-100%, 50%);
+        }
+
+        .nav .link:after {
+            content: '';
+            left: 0;
+            bottom: 0;
+            border-bottom: 3px solid #41d3bd;
+            border-left: 3px solid #41d3bd;
+            transform: translate(100%, -50%)
+        }
+
+        .nav .link:hover:before,
+        .nav .link:hover:after{
+            transform: translate(0,0);
+            opacity: 1;
+        }
+
+        .nav .link:hover {
+            color: #3DA35D;
+        }
+
+
 
       {{block "style" .}}
 
@@ -43,41 +103,41 @@
     <div class="container mx-auto flex items-center h-24">
       <a href="" class="flex items-center justify-center">
       </a>
-      <nav class="contents font-semibold text-base lg:text-lg">
+      <nav class="nav contents font-semibold text-base lg:text-lg">
         <ul class="mx-auto flex items-center">
           <li class="p-5 xl:p-8 active">
             <a class="workout" href="/generate-workout">
               <span>GENERATE WORKOUT</span>
             </a>
           </li>
-          <li class="p-5 xl:p-8 active">
-            <a href="">
+          <li class="link p-5 xl:p-8 active">
+            <a href="/">
               <span>Home page</span>
             </a>
           </li>
-          <li class="p-5 xl:p-8">
+          <li class="p-5 link  xl:p-8">
             <a id="all-btn"  href="/all-muscles">
               <span>All Muscles</span>
             </a>
           </li>
-          <li class="p-5 xl:p-8">
+          <li class="p-5 link  xl:p-8">
             <a id="chest-btn"  href="/chest">
               <span>Chest</span>
             </a>
           </li>
-          <li class="p-5 xl:p-8">
+          <li class="p-5 link  xl:p-8">
             <a id="back-btn" href="/back">
               <span>Back</span>
             </a>
           </li>
-          <li class="p-5 xl:p-8">
+          <li class="p-5 link  xl:p-8">
             <a id="legs-btn" href="/legs">
               <span>Legs</span>
             </a>
           </li>
         </ul>
       </nav>
-      <button class="border border-white rounded-full font-bold px-8 py-2">Contact me</button>
+      <a href="https://telegram.me/usioa" class="border border-white rounded-full font-bold px-8 py-2">Contact me</a>
     </div>
   </header>
 

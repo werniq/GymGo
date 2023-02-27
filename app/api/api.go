@@ -94,10 +94,7 @@ func (web *webapp) Serve() error {
 		legs.POST("/legs", web.ReturnAllLegsExercises)
 	}
 
-	generateWorkout := api.Group("/generate-workout")
-	{
-		generateWorkout.POST("/", web.GenerateWorkout)
-	}
+	api.POST("/generate-workout", web.GenerateWorkout)
 
 	return router.Run(":4001")
 }
@@ -135,6 +132,7 @@ func main() {
 		dbDSN:         dsn,
 		templateCache: templateCache,
 	}
+
 	// legs, chest, back, biceps, glutes exercises already in databases
 	if err := web.Serve(); err != nil {
 		fmt.Printf("Error serving connection: %v", err)

@@ -17,11 +17,11 @@ import (
 
 var (
 	MuscleToCount = map[string]int{
-		"back":   16,
-		"chest":  17,
+		"back":   15,
+		"chest":  16,
 		"biceps": 15,
 		"legs":   15,
-		"glutes": 13,
+		"glutes": 11,
 	}
 	muscles = [7]string{
 		"back", "chest", "biceps", "triceps", "abs", "legs", "glutes",
@@ -43,6 +43,7 @@ type Workout struct {
 }
 
 type Exercise struct {
+	ID        int    `json:"id"`
 	Title     string `json:"title"`
 	Technique string `json:"technique"`
 	VideoURI  string `json:"videoURI"`
@@ -84,6 +85,48 @@ func (db *DatabaseModel) TruncateTable(tableName string) error {
 		return row.Err()
 	}
 
+	return nil
+}
+
+// GetExerciseById retrieves exercise by given id from table name, granted in arguments
+func (db *DatabaseModel) GetExerciseById(id int, table string) (Exercise, error) {
+	var exercise Exercise
+	var title string
+	var technique string
+	var videoURI string
+
+	stmt := fmt.Sprintf(`SELECT title, technique, videoURI FROM %s WHERE id = $1`, table)
+
+	row, err := db.DB.Query(stmt, id)
+	if err != nil {
+		fmt.Printf("Error getting exercise from TABLE [%s] by ID: %v", table, err)
+		return exercise, err
+	}
+	if row.Next() {
+		if err := row.Scan(&title, &technique, &videoURI); err != nil {
+			fmt.Printf("Error retrieveing data from table: %v", err)
+			return exercise, err
+		}
+	}
+
+	exercise = Exercise{
+		Title:     title,
+		Technique: technique,
+		VideoURI:  videoURI,
+	}
+
+	return exercise, nil
+}
+
+// TruncateTables removes all records from all existed tables, in my database
+func (db *DatabaseModel) TruncateTables() error {
+	stmt := `TRUNCATE TABLE $1`
+	for i := 0; i < len(muscles)-1; i++ {
+		if row := db.DB.QueryRow(stmt, muscles[i]); row.Err() != nil {
+			fmt.Printf("Error truncating table %s: %v", muscles[i], row.Err())
+			return row.Err()
+		}
+	}
 	return nil
 }
 
@@ -260,43 +303,6 @@ func (db *DatabaseModel) SaveAllLegsExercises() error {
 	return nil
 }
 
-// GetExerciseById retrieves exercise by given id from table name, granted in arguments
-func (db *DatabaseModel) GetExerciseById(id int, table string) (Exercise, error) {
-	var exercise Exercise
-	stmt := `SELECT * FROM $1 WHERE id = $2`
-
-	row := db.DB.QueryRow(stmt, table, id)
-	if row.Err() != nil {
-		fmt.Printf("Error getting exercise from TABLE [%s] by ID: %v", table, row.Err())
-		return exercise, row.Err()
-	}
-
-	err := row.Scan(
-		&exercise.Title,
-		&exercise.Technique,
-		&exercise.VideoURI,
-	)
-
-	if err != nil {
-		fmt.Printf("Error scanning row: %v", err)
-		return exercise, err
-	}
-
-	return exercise, nil
-}
-
-// TruncateTables removes all records from all existed tables, in my database
-func (db *DatabaseModel) TruncateTables() error {
-	stmt := `TRUNCATE TABLE $1`
-	for i := 0; i < len(muscles)-1; i++ {
-		if row := db.DB.QueryRow(stmt, muscles[i]); row.Err() != nil {
-			fmt.Printf("Error truncating table %s: %v", muscles[i], row.Err())
-			return row.Err()
-		}
-	}
-	return nil
-}
-
 // StoreAllGlutesExercises stores all exercises for glutes in database
 func (db *DatabaseModel) StoreAllGlutesExercises() error {
 	var glutes []string
@@ -465,7 +471,7 @@ func (db *DatabaseModel) StoreAllBicepsExercises() error {
 	return nil
 }
 
-// StoreAllBicepsExercises stores all exercises for glutes in database
+// StoreAllBackExercises stores all exercises for back in database
 func (db *DatabaseModel) StoreAllBackExercises() error {
 	var back []string
 	var technique []string
@@ -556,7 +562,7 @@ func (db *DatabaseModel) StoreAllBackExercises() error {
 	return nil
 }
 
-// StoreAllChestExercises stores all exercises for glutes in database
+// StoreAllChestExercises stores all exercises for chest in database
 func (db *DatabaseModel) StoreAllChestExercises() error {
 	db.TruncateTables()
 	var chest []string
@@ -759,19 +765,38 @@ func (db *DatabaseModel) GetAllExercisesFromTable(tableName string) ([]Exercise,
 	return exercises, nil
 }
 
+// GetOneRandomExercise generates random number in range(0-MuscleToCount[muscle]), where MuscleToCount[muscle]
+// mapping represents the last index of exercise in table.
 func (db *DatabaseModel) GetOneRandomExercise(table string) (Exercise, error) {
+	var emptyExercise Exercise
 	var exercise Exercise
 	var err error
 
-	rand.Seed(time.Now().UnixNano())
+	id := rand.Intn(MuscleToCount[table]) + 1
 
-	v := rand.Intn(MuscleToCount[table]) + 0
-
-	exercise, err = db.GetExerciseById(v, table)
+	exercise, err = db.GetExerciseById(id, table)
 	if err != nil {
-		fmt.Printf("Error getting exercise from table %s by id[%d]: %v", table, v, err)
-		return exercise, err
+		return emptyExercise, fmt.Errorf("error getting exercise from table %s by id[%d]: %w", table, id, err)
 	}
+	if exercise == emptyExercise {
+		exercise, err = db.GetExerciseById(id-1, table)
+		if err != nil {
+			return emptyExercise, fmt.Errorf("error getting exercise from table %s by id[%d]: %w", table, id-1, err)
+		}
+	}
+	fmt.Println(exercise)
 
 	return exercise, nil
+}
+
+func (db *DatabaseModel) GenerateXRandomExercises(table string, num int) ([]Exercise, error) {
+	var exercises []Exercise
+	for i := 0; i < num; i++ {
+		ex, err := db.GetOneRandomExercise(table)
+		if err != nil {
+			return nil, err
+		}
+		exercises = append(exercises, ex)
+	}
+	return exercises, nil
 }

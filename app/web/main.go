@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/werniq/gym/driver"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 type webapp struct {
@@ -22,6 +24,7 @@ type webapp struct {
 	}
 	db            models.DatabaseModel
 	dbDSN         string
+	session       *scs.SessionManager
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 }
@@ -101,6 +104,9 @@ func main() {
 	templateCache := make(map[string]*template.Template)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Lshortfile|log.Ldate|log.Ltime)
 
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 24 * time.Hour
+
 	web := webapp{
 		env:  "development",
 		url:  fmt.Sprintf("http://localhost:%d", portINT),
@@ -121,10 +127,12 @@ func main() {
 
 	router.GET("/", web.HomePage)
 	router.GET("/legs", web.Legs)
-	router.GET("/chets", web.Chest)
+	router.GET("/chest", web.Chest)
 	router.GET("/back", web.Back)
 	router.GET("/biceps", web.Biceps)
 	router.GET("/generate-workout", web.GenerateWorkoutPage)
+	router.POST("/gen-workout", web.GenerateWorkout)
+	router.GET("/receipt", web.Receipt)
 
 	if err := router.Run(":8000"); err != nil {
 		web.errorLog.Printf("Error running server: %v", err)

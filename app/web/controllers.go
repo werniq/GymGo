@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 type Exercise struct {
+	ID        int    `json:"id"`
 	Title     string `json:"title"`
 	Technique string `json:"technique"`
 	VideoURI  string `json:"VideoURI"`
@@ -24,8 +28,121 @@ func (web *webapp) HomePage(c *gin.Context) {
 	}
 }
 
+func (web *webapp) GenerateWorkout(c *gin.Context) {
+	data := make(map[string]interface{})
+	var payload struct {
+		Muscles       string   `json:"muscles"`
+		ExerciseCount []string `json:"exercisesCount"`
+	}
+
+	var request struct {
+		Muscles       string `json:"muscles"`
+		ExerciseCount []int  `json:"exercisesCount"`
+	}
+
+	var res1 ExercisesResponse
+
+	var info struct {
+		Error   bool   `json:"error"`
+		Message string `json:"message"`
+	}
+
+	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+	if err != nil {
+		web.errorLog.Println(err)
+		info.Error = true
+		info.Message = err.Error()
+		fmt.Println(c.Request.Body)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   info.Error,
+			"message": info.Message,
+		})
+		return
+	}
+
+	if len(payload.ExerciseCount) == 0 {
+		info.Error = true
+		info.Message = "you should input amount of exercises in form"
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   info.Error,
+			"message": info.Message,
+		})
+		return
+	} else {
+		for i := 0; i < len(payload.ExerciseCount); i++ {
+			if payload.ExerciseCount[i] == "" {
+				web.errorLog.Printf("Cannot format empty string on index %d", i)
+				return
+			}
+			num, err := strconv.Atoi(payload.ExerciseCount[i])
+			if err != nil {
+				web.errorLog.Println(err)
+				return
+			}
+			request.ExerciseCount = append(request.ExerciseCount, num)
+		}
+	}
+	request.Muscles = payload.Muscles
+
+	body, err := json.Marshal(request)
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+	reader := bytes.NewBuffer(body)
+	fmt.Println(body)
+
+	req, err := http.NewRequest("POST", "http://127.0.0.1:4001/api/generate-workout", reader)
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&res1)
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+	fmt.Println(res1)
+	data["exercises"] = res1
+	data["title"] = "WORKOUT! WORKOUT!"
+
+	session := sessions.Default(c)
+	session.Set("exercises", res1.Exercises)
+
+	c.Redirect(http.StatusFound, "/receipt")
+}
+
+func (web *webapp) Receipt(c *gin.Context) {
+	data := make(map[string]interface{})
+	session := sessions.Default(c)
+	exercises := session.Get("exercises")
+	session.Clear()
+	fmt.Println(exercises)
+	data["exercises"] = exercises
+
+	if err := web.renderTemplate(c.Writer, c.Request, "receipt", &templateData{
+		Data: data,
+	}); err != nil {
+		web.errorLog.Println(err)
+	}
+}
+
 func (web *webapp) GenerateWorkoutPage(c *gin.Context) {
-	if err := web.renderTemplate(c.Writer, c.Request, "generate-workout", &templateData{}, "workout"); err != nil {
+	data := make(map[string]interface{})
+	data["title"] = "Generate workout"
+	if err := web.renderTemplate(c.Writer, c.Request, "generate-workout", &templateData{
+		Data: data,
+	}, "workout"); err != nil {
 		fmt.Printf("Error rendering GENERATE-WORKOUT page: %v", err)
 	}
 }
@@ -54,12 +171,13 @@ func (web *webapp) Legs(c *gin.Context) {
 	err = json.Unmarshal(body, &exercises)
 	if err != nil {
 		web.errorLog.Println(err)
+		return
 	}
 
 	data := make(map[string]interface{})
 	data["exercises"] = exercises.Exercises
 	data["title"] = "All Legs Exercises"
-
+	fmt.Println("alright")
 	if err := web.renderTemplate(c.Writer, c.Request, "muscles", &templateData{
 		Data: data,
 	}); err != nil {
@@ -201,6 +319,7 @@ func (web *webapp) Biceps(c *gin.Context) {
 		web.errorLog.Println(err)
 		return
 	}
+
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
