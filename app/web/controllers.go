@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -71,12 +70,19 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 	} else {
 		for i := 0; i < len(payload.ExerciseCount); i++ {
 			if payload.ExerciseCount[i] == "" {
-				web.errorLog.Printf("Cannot format empty string on index %d", i)
+				info.Error = true
+				info.Message = fmt.Sprintf("Cannot format empty string on index: %d", i)
 				return
 			}
 			num, err := strconv.Atoi(payload.ExerciseCount[i])
 			if err != nil {
+				info.Error = true
+				info.Message = fmt.Sprintf("Error converting string to number: %v", err)
 				web.errorLog.Println(err)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   info.Error,
+					"message": info.Message,
+				})
 				return
 			}
 			request.ExerciseCount = append(request.ExerciseCount, num)
@@ -86,7 +92,13 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 
 	body, err := json.Marshal(request)
 	if err != nil {
+		info.Error = true
+		info.Message = fmt.Sprintf("Error marshalling data: %v", err)
 		web.errorLog.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   info.Error,
+			"message": info.Message,
+		})
 		return
 	}
 	reader := bytes.NewBuffer(body)
@@ -94,7 +106,13 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 
 	req, err := http.NewRequest("POST", "http://127.0.0.1:4001/api/generate-workout", reader)
 	if err != nil {
+		info.Error = true
+		info.Message = fmt.Sprintf("Error creating new POST request: %v", err)
 		web.errorLog.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   info.Error,
+			"message": info.Message,
+		})
 		return
 	}
 
@@ -103,32 +121,41 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		info.Error = true
+		info.Message = fmt.Sprintf("Error executing the request: %v", err)
 		web.errorLog.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   info.Error,
+			"message": info.Message,
+		})
 		return
 	}
 
 	err = json.NewDecoder(res.Body).Decode(&res1)
 	if err != nil {
+		info.Error = true
+		info.Message = fmt.Sprintf("Error decoding body: %v", err)
 		web.errorLog.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   info.Error,
+			"message": info.Message,
+		})
 		return
 	}
-	fmt.Println(res1)
+
 	data["exercises"] = res1
 	data["title"] = "WORKOUT! WORKOUT!"
 
-	session := sessions.Default(c)
-	session.Set("exercises", res1.Exercises)
+	c.JSON(http.StatusOK, gin.H{
+		"exercises": res1.Exercises,
+	})
 
-	c.Redirect(http.StatusFound, "/receipt")
+	c.Redirect(http.StatusMovedPermanently, "/receipt")
+	c.Abort()
 }
 
 func (web *webapp) Receipt(c *gin.Context) {
 	data := make(map[string]interface{})
-	session := sessions.Default(c)
-	exercises := session.Get("exercises")
-	session.Clear()
-	fmt.Println(exercises)
-	data["exercises"] = exercises
 
 	if err := web.renderTemplate(c.Writer, c.Request, "receipt", &templateData{
 		Data: data,

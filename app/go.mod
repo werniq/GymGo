@@ -3,6 +3,7 @@ module github.com/werniq/gym
 go 1.19
 
 require (
+	github.com/alexedwards/scs/v2 v2.5.0
 	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-playground/locales v0.14.1
@@ -11,7 +12,6 @@ require (
 )
 
 require (
-	github.com/alexedwards/scs/v2 v2.5.0 // indirect
 	github.com/antonlindstrom/pgstore v0.0.0-20200229204646-b08ebf1105e0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

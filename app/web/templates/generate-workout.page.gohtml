@@ -445,52 +445,57 @@
             }
         })
 
+        function showErrorMessage(str) {
+            alert(str);
+        }
+
+
         function val() {
             let counter = 0;
-            let exercisesCount = []
+            let exercisesCount = [];
             let muscles = [];
 
             if (id3.checked) {
-                console.log("ID3 checked")
-                muscles += "chest "
-                exercisesCount[counter] = document.getElementById("inp-3").value
-                counter++
+                console.log("ID3 checked");
+                muscles += "chest ";
+                exercisesCount[counter] = document.getElementById("inp-3").value;
+                counter++;
             }
             if (id4.checked) {
-                console.log("ID4 checked")
-                muscles += "back "
-                exercisesCount[counter] = document.getElementById("inp-4").value
-                counter++
+                console.log("ID4 checked");
+                muscles += "back ";
+                exercisesCount[counter] = document.getElementById("inp-4").value;
+                counter++;
             }
             if (id5.checked) {
-                console.log("ID5 checked")
-                muscles += "triceps "
-                exercisesCount[counter] = document.getElementById("inp-5").value
-                counter++
+                console.log("ID5 checked");
+                muscles += "triceps ";
+                exercisesCount[counter] = document.getElementById("inp-5").value;
+                counter++;
             }
             if (id6.checked) {
-                console.log("ID6 checked")
-                muscles += "biceps "
-                exercisesCount[counter] = document.getElementById("inp-6").value
-                counter++
+                console.log("ID6 checked");
+                muscles += "biceps ";
+                exercisesCount[counter] = document.getElementById("inp-6").value;
+                counter++;
             }
             if (id7.checked) {
-                console.log("ID7 checked")
-                muscles += "shoulders  "
-                exercisesCount[counter] = document.getElementById("inp-7").value
-                counter++
+                console.log("ID7 checked");
+                muscles += "shoulders  ";
+                exercisesCount[counter] = document.getElementById("inp-7").value;
+                counter++;
             }
             if (id8.checked) {
-                console.log("ID8 checked")
-                muscles += "glutes "
-                exercisesCount[counter] = document.getElementById("inp-8").value
-                counter++
+                console.log("ID8 checked");
+                muscles += "glutes ";
+                exercisesCount[counter] = document.getElementById("inp-8").value;
+                counter++;
             }
             if (id9.checked) {
-                console.log("ID9 checked")
-                muscles += "legs "
-                exercisesCount[counter] = document.getElementById("inp-9").value
-                counter++
+                console.log("ID9 checked");
+                muscles += "legs ";
+                exercisesCount[counter] = document.getElementById("inp-9").value;
+                counter++;
             }
 
             let requestBody = {
@@ -508,16 +513,19 @@
             }
 
             fetch("/gen-workout", requestOptions)
-                .then(res => {
-                    console.log(res)
-                    res.json()
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log(data)
-                    if (data.error) {
-                        console.log(data.message)
+                    console.log(data);
+                    if (data.error === false) {
+                        console.log(data.exercises);
+                        location.href = "/";
+                    } else {
+                        console.log("ERROR: ")
+                        console.error(data.error)
+                        showErrorMessage(data.message);
                     }
                 })
+
         }
 
     </script>

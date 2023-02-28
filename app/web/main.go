@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/werniq/gym/driver"
@@ -11,7 +10,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"time"
 )
 
 type webapp struct {
@@ -22,9 +20,9 @@ type webapp struct {
 		secret string
 		key    string
 	}
-	db            models.DatabaseModel
-	dbDSN         string
-	session       *scs.SessionManager
+	db    models.DatabaseModel
+	dbDSN string
+	//session       *scs.SessionManager
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 }
@@ -104,8 +102,8 @@ func main() {
 	templateCache := make(map[string]*template.Template)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Lshortfile|log.Ldate|log.Ltime)
 
-	sessionManager := scs.New()
-	sessionManager.Lifetime = 24 * time.Hour
+	//sessionManager := scs.New()
+	//sessionManager.Lifetime = 24 * time.Hour
 
 	web := webapp{
 		env:  "development",
