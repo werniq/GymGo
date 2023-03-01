@@ -145,6 +145,7 @@ func main() {
 	router.GET("/generate-workout", web.GenerateWorkoutPage)
 	router.POST("/gen-workout", web.GenerateWorkout)
 	router.GET("/receipt", web.Receipt)
+	router.GET("/receipt/muscle", web.ReceiptMuscle)
 
 	if err := router.Run(":8000"); err != nil {
 		web.errorLog.Printf("Error running server: %v", err)
