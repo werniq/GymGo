@@ -36,7 +36,7 @@
 {{end}}
 
 {{define "title"}}
-    Your workout | Your workout
+    {{ index .Data "title"}}
 {{end}}
 
 {{define "body"}}
@@ -46,7 +46,7 @@
           {{range $i, $v := $exercises }}
             <div class="exercise" id="{{$i}}">
               <h1 class="exercise-title">{{$v.Title}}</h1>
-              <p class="exercise-tech">{{$v.Technique}}</p>
+              <p class="exercise-tech">  {{$v.Technique}}</p>
               <h2 class="exercise-video">{{$v.VideoURI}}</h2>
               <a href="javascript:void(0)" onclick="changeExercise()">Regenerate</a>
             </div>
@@ -57,11 +57,8 @@
 
 {{define "js"}}
     <script>
-        function changeExercise() {
-
-        }
       function val() {
-
+          let exercises = localStorage.getItem("exercises")
       }
     </script>
 {{end}}

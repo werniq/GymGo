@@ -246,6 +246,7 @@
     {{define "body"}}
 
     <div class="gen-div">
+      <form action="http://localhost/gen-workout" method="post">
        <ul>
         <div class="main">
           <div>
@@ -333,8 +334,10 @@
            </svg>
          </span>
         </a>
-      </div>
+       </div>
+      </form>
     </div>
+
 {{end}}
 
 {{define "js"}}
@@ -449,7 +452,6 @@
             alert(str);
         }
 
-
         function val() {
             let counter = 0;
             let exercisesCount = [];
@@ -481,7 +483,7 @@
             }
             if (id7.checked) {
                 console.log("ID7 checked");
-                muscles += "shoulders  ";
+                muscles += "shoulders ";
                 exercisesCount[counter] = document.getElementById("inp-7").value;
                 counter++;
             }
@@ -515,17 +517,14 @@
             fetch("/gen-workout", requestOptions)
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
                     if (data.error === false) {
                         console.log(data.exercises);
-                        location.href = "/";
+                        localStorage.setItem("exercises", data.exercises)
+                        location.href="/receipt"
                     } else {
-                        console.log("ERROR: ")
-                        console.error(data.error)
-                        showErrorMessage(data.message);
+                        console.log(data)
                     }
                 })
-
         }
 
     </script>

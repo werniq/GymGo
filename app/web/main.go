@@ -1,7 +1,11 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/postgres"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/werniq/gym/driver"
@@ -20,9 +24,9 @@ type webapp struct {
 		secret string
 		key    string
 	}
-	db    models.DatabaseModel
-	dbDSN string
-	//session       *scs.SessionManager
+	db            models.DatabaseModel
+	dbDSN         string
+	session       *scs.SessionManager
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
 }
@@ -85,7 +89,11 @@ func (web *webapp) Serve() error {
 }
 
 func main() {
-
+	gob.Register(&Exercise{})
+	gob.Register(&[]Exercise{})
+	gob.Register(&ExercisesResponse{})
+	gob.Register(&models.Exercise{})
+	gob.Register(&[]models.Exercise{})
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Printf("Error loading .env file: %v", err)
@@ -102,8 +110,11 @@ func main() {
 	templateCache := make(map[string]*template.Template)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Lshortfile|log.Ldate|log.Ltime)
 
-	//sessionManager := scs.New()
-	//sessionManager.Lifetime = 24 * time.Hour
+	store, err := postgres.NewStore(db, []byte("secret"))
+	if err != nil {
+		log.Printf("ERROR creating new store connection: %v", err)
+		return
+	}
 
 	web := webapp{
 		env:  "development",
@@ -123,9 +134,12 @@ func main() {
 
 	router := gin.Default()
 
+	router.Use(sessions.Sessions("session1", store))
+
 	router.GET("/", web.HomePage)
 	router.GET("/legs", web.Legs)
 	router.GET("/chest", web.Chest)
+	router.GET("/glutes", web.Glutes)
 	router.GET("/back", web.Back)
 	router.GET("/biceps", web.Biceps)
 	router.GET("/generate-workout", web.GenerateWorkoutPage)

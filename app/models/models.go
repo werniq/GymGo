@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -799,4 +801,70 @@ func (db *DatabaseModel) GenerateXRandomExercises(table string, num int) ([]Exer
 		exercises = append(exercises, ex)
 	}
 	return exercises, nil
+}
+
+func (db *DatabaseModel) RetrieveExercises(id string, l int) ([]Exercise, error) {
+	stmt := `SELECT * FROM client_exercises where id > $1 AND id < $2`
+
+	var exercises []Exercise
+	num, _ := strconv.Atoi(id)
+	row, err := db.DB.Query(stmt, id, num+l)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for i := 0; i < l-1; i++ {
+		row.Next()
+		var id int
+		var title string
+		var technique string
+		var videoURI string
+		var ex Exercise
+
+		err = row.Scan(&id, &title, &technique, &videoURI)
+		if err != nil {
+			return nil, err
+		}
+		ex = Exercise{
+			ID:        id,
+			Title:     title,
+			Technique: technique,
+			VideoURI:  videoURI,
+		}
+		exercises = append(exercises, ex)
+	}
+
+	return exercises, nil
+}
+
+// SaveExercises is used for lightning storage of exercises, and deleting them at same time
+func (db *DatabaseModel) SaveExercises(exercises []Exercise) (string, int, error) {
+	str, err := bcrypt.GenerateFromPassword([]byte(exercises[0].Title), bcrypt.DefaultCost)
+	if err != nil {
+		return "", 0, err
+	}
+	name := string(str)
+
+	stmt := fmt.Sprintf(`CREATE TABLE %s(title varchar(150) not null, technique text, videoURI text);`, name)
+
+	_, err = db.DB.Exec(stmt)
+
+	if err != nil {
+		fmt.Println("Possible error №1")
+		return "", 0, err
+	}
+
+	stmt = fmt.Sprintf(`INSERT INTO %s values ($1, $2, $3)`, name)
+
+	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	for i := 0; i <= len(exercises)-1; i++ {
+		if _, err := db.DB.Exec(stmt, exercises[i].Title, exercises[i].Technique, exercises[i].VideoURI); err != nil {
+			return "", 0, err
+		}
+	}
+
+	return name, len(exercises), nil
 }

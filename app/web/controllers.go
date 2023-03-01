@@ -4,10 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/werniq/gym/models"
 	"io"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type Exercise struct {
@@ -18,7 +22,7 @@ type Exercise struct {
 }
 
 type ExercisesResponse struct {
-	Exercises []Exercise `json:"exercises"`
+	Exercises []models.Exercise `json:"exercises"`
 }
 
 func (web *webapp) HomePage(c *gin.Context) {
@@ -28,6 +32,7 @@ func (web *webapp) HomePage(c *gin.Context) {
 }
 
 func (web *webapp) GenerateWorkout(c *gin.Context) {
+
 	data := make(map[string]interface{})
 	var payload struct {
 		Muscles       string   `json:"muscles"`
@@ -102,7 +107,6 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 		return
 	}
 	reader := bytes.NewBuffer(body)
-	fmt.Println(body)
 
 	req, err := http.NewRequest("POST", "http://127.0.0.1:4001/api/generate-workout", reader)
 	if err != nil {
@@ -146,16 +150,67 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 	data["exercises"] = res1
 	data["title"] = "WORKOUT! WORKOUT!"
 
-	c.JSON(http.StatusOK, gin.H{
-		"exercises": res1.Exercises,
-	})
+	body, err = json.Marshal(res1)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error marshalling data: %v", err),
+		})
+		return
+	}
+	c.Request.Body = io.NopCloser(bytes.NewReader(body))
 
-	c.Redirect(http.StatusMovedPermanently, "/receipt")
+	// id, title, technique, videoURI
+	rand.Seed(time.Now().Unix())
+	num := rand.Intn(100000000)
+
+	for i := 0; i < len(res1.Exercises); i++ {
+		stmt := `INSERT INTO client_exercises values($1, $2, $3, $4)`
+		_, err := web.db.DB.Exec(stmt, num+i, res1.Exercises[i].Title, res1.Exercises[i].Technique, res1.Exercises[i].VideoURI)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   true,
+				"message": fmt.Sprintf("Error executing statement: %v", err),
+			})
+			return
+		}
+	}
+
+	session := sessions.Default(c)
+
+	session.Set("len", len(res1.Exercises))
+	session.Set("startID", num)
+	err = session.Save()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error saving session data: %v", err),
+		})
+		return
+	}
+
+	c.Redirect(301, "/receipt")
 	c.Abort()
 }
 
 func (web *webapp) Receipt(c *gin.Context) {
+
+	s := sessions.Default(c)
+	id := s.Get("startID")
+	l := s.Get("len")
+	num1 := strconv.Itoa(id.(int))
+	exercises, err := web.db.RetrieveExercises(num1, l.(int))
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error decoding RECEIPT body: %v", err),
+		})
+		return
+	}
 	data := make(map[string]interface{})
+	data["title"] = "Your workout, please!"
+	data["exercises"] = exercises
 
 	if err := web.renderTemplate(c.Writer, c.Request, "receipt", &templateData{
 		Data: data,
@@ -204,7 +259,6 @@ func (web *webapp) Legs(c *gin.Context) {
 	data := make(map[string]interface{})
 	data["exercises"] = exercises.Exercises
 	data["title"] = "All Legs Exercises"
-	fmt.Println("alright")
 	if err := web.renderTemplate(c.Writer, c.Request, "muscles", &templateData{
 		Data: data,
 	}); err != nil {
@@ -269,6 +323,7 @@ func (web *webapp) Triceps(c *gin.Context) {
 	err = json.Unmarshal(body, &exercises)
 	if err != nil {
 		web.errorLog.Println(err)
+		return
 	}
 
 	data := make(map[string]interface{})
@@ -330,6 +385,43 @@ func (web *webapp) Back(c *gin.Context) {
 		/glutes
 		/legs
 */
+
+func (web *webapp) Glutes(c *gin.Context) {
+	req, err := http.NewRequest("POST", "http://localhost:4001/api/legs/glutes", nil)
+
+	if err != nil {
+		web.errorLog.Println("Error creating new request: %v", err)
+		return
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		web.errorLog.Println("Error executing the request: %v", err)
+		return
+	}
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+
+	var exercises ExercisesResponse
+	err = json.Unmarshal(body, &exercises)
+	if err != nil {
+		web.errorLog.Println(err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["exercises"] = exercises.Exercises
+	data["title"] = "All Legs Exercises"
+	fmt.Println("alright")
+	if err := web.renderTemplate(c.Writer, c.Request, "muscles", &templateData{
+		Data: data,
+	}); err != nil {
+		web.errorLog.Println("Error rendering LEGS page: %v", err)
+	}
+}
 
 func (web *webapp) Biceps(c *gin.Context) {
 	req, err := http.NewRequest("POST", "http://localhost:4001/api/rear-upper/biceps", nil)

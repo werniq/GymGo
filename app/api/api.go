@@ -92,6 +92,7 @@ func (web *webapp) Serve() error {
 	legs := api.Group("/legs")
 	{
 		legs.POST("/legs", web.ReturnAllLegsExercises)
+		legs.POST("/glutes", web.ReturnAllGlutesExercises)
 	}
 
 	api.POST("/generate-workout", web.GenerateWorkout)
