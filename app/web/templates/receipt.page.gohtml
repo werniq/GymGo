@@ -9,28 +9,91 @@
             font-family: 'Tilt Warp', cursive;
         }
 
-        .receipt {
-
+        body {
+            box-sizing: border-box;
+            background-color: #011936 !important;
+            font-family: 'Lato', sans-serif;
+            display: flex;
+            flex-direction: column;
         }
 
-        .exercise {
-            width: 50%;
+        .exercise-card {
+            margin: 0 auto;
+            align-content: flex-start;
+            border-radius: 15px;
+            width: 45%;
+            margin-top: 15px;
+            border: 2px solid crimson;
+            background-color: aqua;
+            padding: 10px;
+            font-size: 16px;
+            transition: all .5s ease-in-out;
         }
 
-        .exercise:hover {
-            width: 65%;
+        .exercise-card:hover {
+            width: 60%;
+            background-color: #3aaed8;
+            border-radius: 0;
+            border: none;
+            padding: 35px;
+            box-shadow: 12px 12px 2px 1px #2bd9fe;
         }
 
-        .exercise-title {
+        .cards {
+            font-family: 'Tilt Warp', cursive;
+            font-weight: 700;
+            width: 100%;
+            height: 100%;
+            padding: 25px;
+            background: #013063;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ex-title {
+            color: #000000;
             font-size: 26px;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            font-family: 'Dosis', sans-serif;
         }
 
-        .exercise-tech {
-            font-size: 17px;
+        .ex-link {
+            text-decoration: none;
+            font-size: 26px;
+            color: slateblue;
         }
 
-        .exercise-video {
-            font-size: 22px;
+        .ex-title :hover{
+            font-weight: 400;
+            box-shadow: inset 300px 0 0 0 white;
+            color: lightgoldenrodyellow;
+            width: 100%;
+            border: 3px solid crimson;
+        }
+
+        .ex-technique {
+            padding: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            width: 100%;
+        }
+
+        .exercise-card:hover {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            animation-name: example;
+            animation-duration: 0.25s;
+            border-left: 8px solid #acd8aa;
+            box-shadow: 0 14px 28px #2bd9fe, 0 10px 10px #2bd9fe;
+        }
+
+        @keyframes example {
+            0%   {border-left: 2px solid #ffffff;}
+            25%  {border-left: 3px solid #ffe6e6;}
+            50%  {border-left: 4px solid #ff8080;}
+            100% {border-left: 5px solid #ff0000;}
         }
     </style>
 {{end}}
@@ -44,11 +107,10 @@
       <div class="receipt">
           {{ $exercises := index .Data "exercises" }}
           {{range $i, $v := $exercises }}
-            <div class="exercise" id="{{$i}}">
-              <h1 class="exercise-title">{{$v.Title}}</h1>
-              <p class="exercise-tech">  {{$v.Technique}}</p>
-              <h2 class="exercise-video">{{$v.VideoURI}}</h2>
-              <a href="javascript:void(0)">Regenerate</a>
+            <div class="exercise-card" id="{{$i}}">
+              <h1 class="ex-title">{{$v.Title}}</h1>
+              <p class="ex-technique">  {{$v.Technique}}</p>
+              <a class="ex-link">{{$v.VideoURI}}</a>
             </div>
           {{end}}
         </div>

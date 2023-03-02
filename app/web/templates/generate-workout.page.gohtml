@@ -518,8 +518,6 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.error === false) {
-                        console.log(data.exercises);
-                        localStorage.setItem("exercises", data.exercises)
                         location.href="/receipt"
                     } else {
                         console.log(data)

@@ -8,10 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/werniq/gym/models"
 	"io"
-	"math/rand"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type Exercise struct {
@@ -33,7 +31,6 @@ func (web *webapp) HomePage(c *gin.Context) {
 
 func (web *webapp) GenerateWorkout(c *gin.Context) {
 
-	data := make(map[string]interface{})
 	var payload struct {
 		Muscles       string   `json:"muscles"`
 		ExerciseCount []string `json:"exercisesCount"`
@@ -147,89 +144,96 @@ func (web *webapp) GenerateWorkout(c *gin.Context) {
 		return
 	}
 
-	data["exercises"] = res1
-	data["title"] = "WORKOUT! WORKOUT!"
-
-	body, err = json.Marshal(res1)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   true,
-			"message": fmt.Sprintf("Error marshalling data: %v", err),
-		})
-		return
-	}
-	c.Request.Body = io.NopCloser(bytes.NewReader(body))
-
-	// id, title, technique, videoURI
-	rand.Seed(time.Now().Unix())
-	//num := rand.Intn(100000000)
-
-	_, _, err = web.db.SaveExercises(res1.Exercises)
-	if err != nil {
-		web.errorLog.Println(err)
-		return
-	}
-
-	//session := sessions.Default(c)
-
-	//session.Set("len", len(res1.Exercises))
-	//session.Set("startID", num)
-	//err = session.Save()
+	//data["exercises"] = res1
+	//data["title"] = "WORKOUT! WORKOUT!"
+	//
+	//body, err = json.Marshal(res1)
 	//if err != nil {
 	//	c.JSON(http.StatusBadRequest, gin.H{
 	//		"error":   true,
-	//		"message": fmt.Sprintf("Error saving session data: %v", err),
+	//		"message": fmt.Sprintf("Error marshalling data: %v", err),
 	//	})
 	//	return
 	//}
 
-	c.Redirect(301, "/receipt")
-	c.Abort()
+	id, l, err := web.db.SaveExercises(res1.Exercises)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error saving exercises: %v", err),
+		})
+		return
+	}
+
+	session := sessions.Default(c)
+	session.Set("id", id)
+	session.Set("len", l)
+	err = session.Save()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   true,
+			"message": fmt.Sprintf("Error saving session: %v", err),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"error": false,
+	})
 }
 
 func (web *webapp) Receipt(c *gin.Context) {
-	s := sessions.Default(c)
-	id := s.Get("startID")
-	l := s.Get("len")
+	session := sessions.Default(c)
+	id := session.Get("id")
+	l := session.Get("len")
 
-	num1 := strconv.Itoa(id.(int))
-	exercises, err := web.db.RetrieveExercises(num1, l.(int))
+	num := strconv.Itoa(id.(int))
 
+	exercises, err := web.db.RetrieveExercises(num, l.(int))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   true,
-			"message": fmt.Sprintf("Error decoding RECEIPT body: %v", err),
+			"message": fmt.Sprintf("Error retrieving exercises from table: %v", err),
 		})
 		return
 	}
+
 	data := make(map[string]interface{})
-	data["title"] = "Your workout, please!"
+	data["title"] = "Your workout, please"
 	data["exercises"] = exercises
-
-	c.Redirect(http.StatusFound, "/receipt/muscle")
-}
-
-func (web *webapp) ReceiptMuscle(c *gin.Context) {
-	var res ExercisesResponse
-	err := json.NewDecoder(c.Request.Body).Decode(&res)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   true,
-			"message": fmt.Sprintf("Error decoding Request body: %v", err),
-		})
-		return
-	}
-	data := make(map[string]interface{})
-
-	data["title"] = "Your "
-	data["exercises"] = res.Exercises
-
 	if err := web.renderTemplate(c.Writer, c.Request, "receipt", &templateData{
 		Data: data,
 	}); err != nil {
 		web.errorLog.Println(err)
 	}
 }
+
+//func (web *webapp) Receipt(c *gin.Context) {
+//	s := sessions.Default(c)
+//	id := s.Get("startID")
+//	l := s.Get("len")
+//
+//	num1 := strconv.Itoa(id.(int))
+//	exercises, err := web.db.RetrieveExercises(num1, l.(int))
+//
+//	if err != nil {
+//		c.JSON(http.StatusBadRequest, gin.H{
+//			"error":   true,
+//			"message": fmt.Sprintf("Error decoding RECEIPT body: %v", err),
+//		})
+//		return
+//	}
+//	fmt.Println(exercises)
+//	data := make(map[string]interface{})
+//	data["title"] = "Your workout, please!"
+//	data["exercises"] = exercises
+//
+//	if err := web.renderTemplate(c.Writer, c.Request, "receipt", &templateData{
+//		Data: data,
+//	}); err != nil {
+//		web.errorLog.Println(err)
+//	}
+//}
 
 func (web *webapp) GenerateWorkoutPage(c *gin.Context) {
 	data := make(map[string]interface{})
